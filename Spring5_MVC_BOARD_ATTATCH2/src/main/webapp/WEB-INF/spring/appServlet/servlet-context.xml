@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+		http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-4.3.xsd
+		http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.3.xsd">
+
+	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
+	
+	<!-- Enables the Spring MVC @Controller programming model -->
+	<annotation-driven />
+
+	<!-- Handles HTTP GET requests for /resources/** by efficiently serving up static resources in the ${webappRoot}/resources directory -->
+	<!-- 리소스들 따로 처리 -->
+	<resources mapping="/resources/**" location="/resources/" />
+
+	<!-- Resolves views selected for rendering by @Controllers to .jsp resources in the /WEB-INF/views directory -->
+	<beans:bean class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+		<beans:property name="prefix" value="/WEB-INF/views/" />
+		<beans:property name="suffix" value=".jsp" />
+	</beans:bean>
+	
+	<!-- 꼭 있어야함 -->
+	<context:component-scan base-package="com.naver.myhome6" />
+	
+	<!-- 프로퍼티 파일을 이용해서 값을 주입하는 방법
+		1. context 네임스페이스의 property-placeholder 태그를 추가하고
+			앞에서 만든 프로퍼티 파일의 위치를 지정합니다.
+		2. Controller에서 @Value을 이용해서 값을 가져옵니다.
+			@Value 애노테이션의 주요 용도는 자바코드 외부의 리소스나 환경정보에
+			담긴 값을 사용하도록 지정해주는 데에 있습니다  
+	
+	 -->
+	
+	
+	<context:property-placeholder location="classpath:pro/savefolder.properties"/>
+	<!-- 주기적인 작업이 있을때 @Scheduled 애노테이션을 사용하면 쉽게 적용할수있습니다 -->
+	
+	<task:annotation-driven/>
+	
+	<!-- AOP -->
+	<!-- <beans:bean id ="log" class="com.naver.myhome6.common.BeforeAdvice">
+	</beans:bean>
+	
+	<aop:config>	
+		<aop:pointcut expression="execution(* com.naver.myhome6..*Impl..*(..))" id="getPointcut"/>
+		<aop:pointcut expression="execution(* com.naver.myhome6..*Impl.get*(..))" id="allPointcut"/>
+		<aop:aspect ref="log">
+			<aop:before method="beforeLog" pointcut-ref="getPointcut"/>
+		</aop:aspect>
+	</aop:config>
+	
+	
+   <beans:bean id="log2"
+      class="com.naver.myhome6.common.AfterAdvice">
+   </beans:bean>
+
+   <aop:config>
+      <aop:pointcut id="allPointcut2"
+         expression="execution(* com.naver.myhome6.service..*Impl.*(..))" />
+
+      <aop:pointcut id="getPointcut2"
+         expression="execution(* com.naver.myhome6.service..*Impl.get*(..))" />
+
+      <aop:aspect ref="log2">
+         <aop:after pointcut-ref="getPointcut2" method="afterLog" />
+      </aop:aspect>
+   </aop:config>
+ -->
+ 
+ <!--AOP Around-->
+ 
+ 
+ <beans:bean id ="log" class="com.naver.myhome6.common.AroundAdvice">
+	</beans:bean>
+	
+	<aop:config>	
+		<aop:pointcut expression="execution(* com.naver.myhome6..*Impl.get*(..))" id="allPointcut"/>
+		<aop:aspect ref="log">		
+			<aop:around method="aroundLog" pointcut-ref="allPointcut"/>
+		</aop:aspect>
+	</aop:config>
+	
+	
+<!-- public void afterThrowingLog(Throwable exp) {
+   매개변수 이름과 throwing=exp의 속성값을 일치시켜야 한다. -->
+   <!-- public void afterThrowingLog(Throwable exp) {
+   매개변수 이름과 throwing=exp의 속성값을 일치시켜야 한다. -->
+  <beans:bean id="afterthrow" class="com.naver.myhome6.common.Afterthrowing">
+    </beans:bean>
+    
+    <aop:config>
+      <aop:pointcut id="getPointcut"    
+           expression="execution(* com.naver.myhome6..*Impl.get*(..))"/>
+        <aop:aspect ref="afterthrow">                
+          <aop:after-throwing pointcut-ref="getPointcut" 
+                   method="afterThrowingLog" throwing="exp" />
+        </aop:aspect>
+    </aop:config>  
+
+<!-- public void afterReturningLog(Object obj){
+	매개변수로 사용하는 obj가 returning="obj" 입니다. returning="obj1"로 작성하면 아래와같은 오류가 발생합니다.
+	returning argument name 'obj1' was not bound in advice arguments -->
+	<beans:bean id="afterreturn"
+      class="com.naver.myhome6.common.AfterReturningAdvice"/>
+   <aop:config>
+      <aop:pointcut id="getPointcut"
+         expression="execution(* com.naver.myhome6..*Impl.get*(..))"/>
+      <aop:aspect ref="afterreturn">
+         <aop:after-returning pointcut-ref="getPointcut"
+             method="afterReturningLog" returning="obj"/>
+      </aop:aspect>
+   </aop:config>
+
+ 
+	
+	
+	
+</beans:beans>
